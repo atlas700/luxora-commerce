@@ -1,6 +1,11 @@
+import { Header } from "@/components/header";
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { shadcn, shadesOfPurple } from '@clerk/themes'
+
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,12 +28,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
-    </html>
+    <ClerkProvider
+      appearance={{
+        theme: shadcn
+      }}
+    >
+      <html lang="en">
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased max-w-7xl mx-auto dark`}
+        >
+          <Header />
+          <main className="mt-14 px-4">{children}</main>
+          <Toaster richColors position="top-left" />
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
