@@ -14,6 +14,20 @@ export async function createCheckoutSession(
     return redirect("/sign-in");
   }
 
+  const productData: any = {
+    name: product.name,
+  };
+
+  // Only include description if it's not empty
+  if (product.description && product.description.trim() !== "") {
+    productData.description = product.description;
+  }
+
+  // Only include images if valid
+  if (product.imageUrl && product.imageUrl.trim() !== "") {
+    productData.images = [product.imageUrl];
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     payment_method_types: ["card"],
@@ -21,11 +35,7 @@ export async function createCheckoutSession(
       {
         price_data: {
           currency: "usd",
-          product_data: {
-            name: product.name,
-            description: product.description || "",
-            images: [product.imageUrl!],
-          },
+          product_data: productData,
           unit_amount: product.priceInCents,
         },
         quantity: 1,
@@ -39,6 +49,5 @@ export async function createCheckoutSession(
     },
   });
 
-  // Redirect user to Stripe Checkout
   redirect(session.url!);
 }

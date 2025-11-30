@@ -10,12 +10,16 @@ import { db } from "@/drizzle/db";
 import { ProductTable, ShippingAddressTable } from "@/drizzle/schema";
 import { getCurrentUser } from "@/lib/get-current-user";
 import { eq } from "drizzle-orm";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 export default async function CheckoutPage(
   props: PageProps<"/products/[productId]/checkout">
 ) {
   const { productId } = await props.params;
+
+  if (productId == null) {
+    return notFound();
+  }
 
   const product = await db.query.ProductTable.findFirst({
     where: eq(ProductTable.id, productId),
@@ -71,7 +75,7 @@ export default async function CheckoutPage(
         </CardContent>
       </Card>
 
-      <PaymentButton product={product}/>
+      <PaymentButton product={product} />
     </div>
   );
 }
