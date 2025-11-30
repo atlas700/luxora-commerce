@@ -15,7 +15,7 @@ CREATE TABLE "orders" (
 CREATE TABLE "products" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL,
-	"description" text,
+	"description" text NOT NULL,
 	"imageUrl" text NOT NULL,
 	"imageKey" text NOT NULL,
 	"userId" text NOT NULL,

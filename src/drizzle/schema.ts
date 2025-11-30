@@ -45,7 +45,7 @@ export const UserRelations = relations(UserTable, ({ many }) => {
 export const ProductTable = pgTable("products", {
   id: id,
   name: text().notNull(),
-  description: text(),
+  description: text().notNull(),
   imageUrl: text().notNull(),
   imageKey: text().notNull(),
   userId: text()
