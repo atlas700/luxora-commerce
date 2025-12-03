@@ -20,31 +20,43 @@ import { Switch } from "../ui/switch";
 import { Textarea } from "../ui/textarea";
 import { UploadButton } from "../uploadthing/uploadthing";
 import { toast } from "sonner";
-import { savePost } from "@/actions/products";
+import { savePost, updateProduct } from "@/actions/products";
 import { Loader2Icon } from "lucide-react";
+import { ProductTable } from "@/drizzle/schema";
 
 type ProductFormType = z.infer<typeof productSchema>;
 
-export function ProductForm() {
+export function ProductForm({
+  product,
+}: {
+  product?: typeof ProductTable.$inferSelect;
+}) {
   const form = useForm({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      availableForPurchase: false,
-      description: "",
-      imageUrl: "",
+      availableForPurchase: product ? product.availableForPurchase : false,
+      description: product ? product.description : "",
+      imageUrl: product ? product.imageUrl : "",
       imageKey: "",
-      name: "",
-      priceInCents: 0,
-      stockQty: 0,
-      weight: "",
+      name: product ? product.name : "",
+      priceInCents: product ? product.priceInCents : 0,
+      stockQty: product ? product.stockQty : 0,
+      weight: product ? product.weight : "",
     },
   });
 
   async function onSubmit(values: ProductFormType) {
-    const result = await savePost(values);
+    if (product != null) {
+      const result = await updateProduct(product.id, values);
+      if (result.error) {
+        toast.error(result.message);
+      }
+    } else {
+      const result = await savePost(values);
 
-    if (result.error) {
-      toast.error(result.message);
+      if (result.error) {
+        toast.error(result.message);
+      }
     }
   }
 
@@ -145,23 +157,32 @@ export function ProductForm() {
           />
         </div>
 
-        <UploadButton
-          endpoint="imageUploader"
-          onUploadError={(err) => {
-            toast.error(err.message || "Upload failed, try again");
-          }}
-          onClientUploadComplete={(res) => {
-            toast.success("Image uploaded");
-            form.setValue("imageUrl", res[0].serverData.imageUrl);
-            form.setValue("imageKey", res[0].serverData.imageKey)
-          }}
-        />
+        <div className="flex justify-center items-center my-12 gap-x-12">
+          <UploadButton
+            endpoint="imageUploader"
+            onUploadError={(err) => {
+              toast.error(err.message || "Upload failed, try again");
+            }}
+            onClientUploadComplete={(res) => {
+              toast.success("Image uploaded");
+              form.setValue("imageUrl", res[0].serverData.imageUrl);
+              form.setValue("imageKey", res[0].serverData.imageKey);
+            }}
+          />
+          {form.getValues("imageUrl") ? (
+            <img
+              src={product ? product.imageUrl : form.getValues("imageUrl")}
+              alt="Product Image"
+              className="h-32 object-cover rounded-md shadow-2xl"
+            />
+          ) : null}
+        </div>
 
         <Button disabled={form.formState.isSubmitting}>
           {form.formState.isSubmitting ? (
             <Loader2Icon className="animate-spin" />
           ) : null}
-          Save
+          {product ? "Update" : "Save"}
         </Button>
       </form>
     </Form>

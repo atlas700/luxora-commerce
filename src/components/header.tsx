@@ -1,8 +1,17 @@
 import { getCurrentUser } from "@/lib/get-current-user";
 import { SignedOut, UserButton } from "@clerk/nextjs";
-import { BaggageClaimIcon } from "lucide-react";
+import { BaggageClaimIcon, MenuIcon } from "lucide-react";
 import Link from "next/link";
+import { ProfileButton } from "./profile-button";
 import { Button } from "./ui/button";
+import { Separator } from "./ui/separator";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "./ui/sheet";
 
 export async function Header() {
   const user = await getCurrentUser();
@@ -20,7 +29,7 @@ export async function Header() {
         <Link href="/" className="flex gap-1">
           <BaggageClaimIcon /> <span>Luxora</span>
         </Link>
-        <nav className="flex">
+        <nav className="hidden md:flex">
           <Button asChild variant="link" size="lg">
             <Link href="/orders">Orders</Link>
           </Button>
@@ -39,6 +48,39 @@ export async function Header() {
             </Button>
           </SignedOut>
         </nav>
+        <div className="md:hidden">
+          <Sheet>
+            <SheetTrigger>
+              <MenuIcon />
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Menu Links</SheetTitle>
+              </SheetHeader>
+              <Separator />
+
+              <div className="w-full flex flex-col">
+                <Button asChild variant="ghost" size="lg">
+                  <Link href="/orders">Orders</Link>
+                </Button>
+                <Button asChild variant="ghost" size="lg">
+                  <Link href="/products">Products</Link>
+                </Button>
+                {isAdminUser ? (
+                  <Button asChild variant="ghost" size="lg">
+                    <Link href="/dashboard">Dashboard</Link>
+                  </Button>
+                ) : null}
+                <ProfileButton />
+                <SignedOut>
+                  <Button asChild variant="ghost" size="lg">
+                    <Link href="/sign-in">Login</Link>
+                  </Button>
+                </SignedOut>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </header>
   );

@@ -46,6 +46,53 @@ export async function savePost(unsafeData: ProductType) {
   redirect("/dashboard/products");
 }
 
+export async function updateProduct(
+  productId: string,
+  unsafeData: ProductType
+) {
+  const user = await getCurrentUser();
+
+  if (user == null || user.role !== "ADMIN") {
+    redirect("/sign-in");
+  }
+
+  const { data, success } = productSchema.safeParse(unsafeData);
+
+  if (!success) {
+    return {
+      error: true,
+      message: "Unable to update your product, try again",
+    };
+  }
+
+  const product = await db.query.ProductTable.findFirst({
+    where: eq(ProductTable.id, productId),
+  });
+
+  if (product == null) {
+    return {
+      error: true,
+      message: "Cannot find the product by this id",
+    };
+  }
+
+  if (data.imageKey != null && data.imageUrl != null) {
+    await utapi.deleteFiles([product.imageKey]);
+
+    await db
+      .update(ProductTable)
+      .set(data)
+      .where(eq(ProductTable.id, productId));
+  } else {
+    await db
+      .update(ProductTable)
+      .set(data)
+      .where(eq(ProductTable.id, productId));
+  }
+
+  redirect("/dashboard/products");
+}
+
 export async function changeProductAvailability(productId: string) {
   const user = await getCurrentUser();
 
@@ -96,8 +143,8 @@ export async function deleteProduct(productId: string) {
     };
   }
 
-  if(product.imageUrl){
-    await utapi.deleteFiles([product.imageKey])
+  if (product.imageUrl) {
+    await utapi.deleteFiles([product.imageKey]);
   }
 
   const result = await db
@@ -110,6 +157,4 @@ export async function deleteProduct(productId: string) {
       message: "You cannot delete this product, it has on going orders",
     };
   }
-
-
 }
